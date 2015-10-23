@@ -1,0 +1,258 @@
+<html lan="cn" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+		<link rel="stylesheet" href="/mdl-style.css" />
+		<script src="/mdl-min.js"></script>
+		<link rel="stylesheet" href="/styles.css">
+	</head>
+	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+    
+    <header class="tzy-header">
+        <span class="tzy-header__title">
+            <a href="/">TaoZeyu's Blog</a>
+        </span>
+        <div class="tzy-header__elements">
+        
+          <nav>
+              
+              <a href="/nodes/technology.html">
+                技术
+              </a>
+              
+              <a href="/nodes/chat.html">
+                杂谈
+              </a>
+              
+          </nav>
+        </div>
+        <div style="clear: both;"/>
+    </header>
+      
+    <main class="tzy-content">
+	    
+
+<div class="tzy-details">
+    
+	<div class="card">
+        <div>
+        	<a href="/" class="mdl-button">返回首页</a>
+             
+             <div style="clear: both;"/>
+        </div>
+    	<div class="tzy-article">
+    		<h1 class="title">Java HashMap的死循环</h1>
+    		
+    			<div class="declare">
+    			
+    				该文章属转载，
+    			
+    			
+    				作者陈皓，
+    			
+    			
+    				点击<a target="_blank" href="http://coolshell.cn/articles/9606.html">这里</a>查看原文
+    			。
+    			</div>
+    		
+            <h1>问题的症状</h1>
+
+<p>从前我们的Java代码因为一些原因使用了HashMap这个东西，但是当时的程序是单线程的，一切都没有问题。后来，我们的程序性能有问题，所以需要变成多线程的，于是，变成多线程后到了线上，发现程序经常占了100%的CPU，查看堆栈，你会发现程序都Hang在了HashMap.get()这个方法上了，重启程序后问题消失。但是过段时间又会来。而且，这个问题在测试环境里可能很难重现。</p>
+
+<p>我们简单的看一下我们自己的代码，我们就知道HashMap被多个线程操作。而Java的文档说HashMap是非线程安全的，应该用ConcurrentHashMap。</p>
+
+<p>但是在这里我们可以来研究一下原因。</p>
+
+<h1>Hash表数据结构</h1>
+
+<p>我需要简单地说一下HashMap这个经典的数据结构。</p>
+
+<p>HashMap通常会用一个指针数组（假设为table[]）来做分散所有的key，当一个key被加入时，会通过Hash算法通过key算出这个数组的下标i，然后就把这个<key, value>插到table[i]中，如果有两个不同的key被算在了同一个i，那么就叫冲突，又叫碰撞，这样会在table[i]上形成一个链表。</p>
+
+<p>我们知道，如果table[]的尺寸很小，比如只有2个，如果要放进10个keys的话，那么碰撞非常频繁，于是一个O(1)的查找算法，就变成了链表遍历，性能变成了O(n)，这是Hash表的缺陷（可参看《<a href="http://coolshell.cn/articles/6424.html#tc_qz_original=411098726">Hash Collision DoS 问题</a>》）。</p>
+
+<p>所以，Hash表的尺寸和容量非常的重要。一般来说，Hash表这个容器当有数据要插入时，都会检查容量有没有超过设定的thredhold，如果超过，需要增大Hash表的尺寸，但是这样一来，整个Hash表里的无素都需要被重算一遍。这叫rehash，这个成本相当的大。</p>
+
+<p>相信大家对这个基础知识已经很熟悉了。</p>
+
+<h1>HashMap的rehash源代码</h1>
+
+<p>下面，我们来看一下Java的HashMap的源代码。</p>
+
+<p>Put一个Key,Value对到Hash表中：</p>
+
+<p><div class='highlight'><code><pre>
+publicV&nbsp;put(K&nbsp;key,&nbsp;V&nbsp;value)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;......
+&nbsp;&nbsp;&nbsp;&nbsp;//算Hash值
+&nbsp;&nbsp;&nbsp;&nbsp;inthash&nbsp;=&nbsp;hash(key.hashCode());
+&nbsp;&nbsp;&nbsp;&nbsp;inti&nbsp;=&nbsp;indexFor(hash,&nbsp;table.length);
+&nbsp;&nbsp;&nbsp;&nbsp;//如果该key已被插入，则替换掉旧的value&nbsp;（链接操作）
+&nbsp;&nbsp;&nbsp;&nbsp;for(Entry&lt;K,V&gt;&nbsp;e&nbsp;=&nbsp;table[i];&nbsp;e&nbsp;!=null;&nbsp;e&nbsp;=&nbsp;e.next)&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Object&nbsp;k;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(e.hash&nbsp;==&nbsp;hash&nbsp;&amp;&amp;&nbsp;((k&nbsp;=&nbsp;e.key)&nbsp;==&nbsp;key&nbsp;||&nbsp;key.equals(k)))&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V&nbsp;oldValue&nbsp;=&nbsp;e.value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.value&nbsp;=&nbsp;value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.recordAccess(this);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;returnoldValue;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;modCount++;
+&nbsp;&nbsp;&nbsp;&nbsp;//该key不存在，需要增加一个结点
+&nbsp;&nbsp;&nbsp;&nbsp;addEntry(hash,&nbsp;key,&nbsp;value,&nbsp;i);
+&nbsp;&nbsp;&nbsp;&nbsp;returnnull;
+}
+</pre></code></div></p>
+
+<p>检查容量是否超标</p>
+
+<p><div class='highlight'><code><pre>
+voidaddEntry(inthash,&nbsp;K&nbsp;key,&nbsp;V&nbsp;value,intbucketIndex)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;Entry&lt;K,V&gt;&nbsp;e&nbsp;=&nbsp;table[bucketIndex];
+&nbsp;&nbsp;&nbsp;&nbsp;table[bucketIndex]&nbsp;=newEntry&lt;K,V&gt;(hash,&nbsp;key,&nbsp;value,&nbsp;e);
+&nbsp;&nbsp;&nbsp;&nbsp;//查看当前的size是否超过了我们设定的阈值threshold，如果超过，需要resize
+&nbsp;&nbsp;&nbsp;&nbsp;if(size++&nbsp;&gt;=&nbsp;threshold)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(2*&nbsp;table.length);
+}
+</pre></code></div></p>
+
+<p>新建一个更大尺寸的hash表，然后把数据从老的Hash表中迁移到新的Hash表中。</p>
+
+<p><div class='highlight'><code><pre>
+voidresize(intnewCapacity)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;Entry[]&nbsp;oldTable&nbsp;=&nbsp;table;
+&nbsp;&nbsp;&nbsp;&nbsp;intoldCapacity&nbsp;=&nbsp;oldTable.length;
+&nbsp;&nbsp;&nbsp;&nbsp;......
+&nbsp;&nbsp;&nbsp;&nbsp;//创建一个新的Hash&nbsp;Table
+&nbsp;&nbsp;&nbsp;&nbsp;Entry[]&nbsp;newTable&nbsp;=newEntry[newCapacity];
+&nbsp;&nbsp;&nbsp;&nbsp;//将Old&nbsp;Hash&nbsp;Table上的数据迁移到New&nbsp;Hash&nbsp;Table上
+&nbsp;&nbsp;&nbsp;&nbsp;transfer(newTable);
+&nbsp;&nbsp;&nbsp;&nbsp;table&nbsp;=&nbsp;newTable;
+}
+&nbsp;&nbsp;&nbsp;
+</pre></code></div></p>
+
+<p>迁移的源代码，注意高亮处</p>
+
+<p><div class='highlight'><code><pre>
+voidtransfer(Entry[]&nbsp;newTable)
+{
+&nbsp;&nbsp;&nbsp;&nbsp;Entry[]&nbsp;src&nbsp;=&nbsp;table;
+&nbsp;&nbsp;&nbsp;&nbsp;intnewCapacity&nbsp;=&nbsp;newTable.length;
+&nbsp;&nbsp;&nbsp;&nbsp;//下面这段代码的意思是：
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;从OldTable里摘一个元素出来，然后放到NewTable中
+&nbsp;&nbsp;&nbsp;&nbsp;for(intj&nbsp;=0;&nbsp;j&nbsp;&lt;&nbsp;src.length;&nbsp;j++)&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Entry&lt;K,V&gt;&nbsp;e&nbsp;=&nbsp;src[j];
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(e&nbsp;!=null)&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;src[j]&nbsp;=null;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Entry&lt;K,V&gt;&nbsp;next&nbsp;=&nbsp;e.next;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inti&nbsp;=&nbsp;indexFor(e.hash,&nbsp;newCapacity);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.next&nbsp;=&nbsp;newTable[i];
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newTable[i]&nbsp;=&nbsp;e;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e&nbsp;=&nbsp;next;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}while(e&nbsp;!=null);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;}
+}
+</pre></code></div></p>
+
+<p>好了，这个代码算是比较正常的。而且没有什么问题。</p>
+
+<h1>正常的ReHash的过程</h1></h1>
+
+<p>画了个图做了个演示。</p>
+
+<ul>
+<li>我假设了我们的hash算法就是简单的用key mod 一下表的大小（也就是数组的长度）。</li>
+<li>最上面的是old hash 表，其中的Hash表的size=2, 所以key = 3, 7, 5，在mod 2以后都冲突在table[1]这里了。</li>
+<li>接下来的三个步骤是Hash表 resize成4，然后所有的<key,value> 重新rehash的过程。</li>
+</ul>
+
+<p><img src="/public/upload/images/java-hash-map-endless-loop-001.jpg" alt="" /></p>
+
+<h1>并发下的Rehash</h1>
+
+<p>1）假设我们有两个线程。我用红色和浅蓝色标注了一下。</p></p>
+
+<p>我们再回头看一下我们的 transfer代码中的这个细节：</p></p>
+
+<p><div class='highlight'><code><pre>
+do{
+&nbsp;&nbsp;&nbsp;&nbsp;Entry&lt;K,V&gt;&nbsp;next&nbsp;=&nbsp;e.next;//&nbsp;&lt;--假设线程一执行到这里就被调度挂起了
+&nbsp;&nbsp;&nbsp;&nbsp;inti&nbsp;=&nbsp;indexFor(e.hash,&nbsp;newCapacity);
+&nbsp;&nbsp;&nbsp;&nbsp;e.next&nbsp;=&nbsp;newTable[i];
+&nbsp;&nbsp;&nbsp;&nbsp;newTable[i]&nbsp;=&nbsp;e;
+&nbsp;&nbsp;&nbsp;&nbsp;e&nbsp;=&nbsp;next;
+}while(e&nbsp;!=null);
+</pre></code></div></p>
+
+<p>而我们的线程二执行完成了。于是我们有下面的这个样子。</p>
+
+<p><img src="/public/upload/images/java-hash-map-endless-loop-002.jpg" alt="" /></p>
+
+<p>注意，因为Thread1的 e 指向了key(3)，而next指向了key(7)，其在线程二rehash后，指向了线程二重组后的链表。我们可以看到链表的顺序被反转后。</p></p>
+
+<p>2）线程一被调度回来执行。</p>
+
+<ul>
+<li>先是执行<span class='highlight'><code>newTalbe[i]&nbsp;=&nbsp;e;</span></code></li>
+<li>然后是<span class='highlight'><code>e&nbsp;=&nbsp;next</span></code>，导致了e指向了key(7)，</li>
+<li>而下一次循环的<span class='highlight'><code>next&nbsp;=&nbsp;e.next</span></code>导致了next指向了key(3)</li>
+</ul>
+
+<p><img src="/public/upload/images/java-hash-map-endless-loop-003.jpg" alt="" /></p>
+
+<p>3）一切安好。</p></p>
+
+<p>线程一接着工作。把key(7)摘下来，放到newTable[i]的第一个，然后把e和next往下移。</p>
+
+<p><img src="/public/upload/images/java-hash-map-endless-loop-004.jpg" alt="" /></p>
+
+<p>4）环形链接出现。</p>
+
+<p><span class='highlight'><code>e.next&nbsp;=&nbsp;newTable[i]</span></code> 导致<span class='highlight'><code>key(3).next</span></code>指向了<span class='highlight'><code>key(7)</span></code></p>
+
+<p>注意：此时的<span class='highlight'><code>key(7).next</span></code>已经指向了<span class='highlight'><code>key(3)</span></code>， 环形链表就这样出现了。</p>
+
+<p><img src="/public/upload/images/java-hash-map-endless-loop-005.jpg" alt="" /></p>
+
+<p>于是，当我们的线程一调用到，<span class='highlight'><code>HashTable.get(11)</span></code>时，悲剧就出现了——Infinite Loop。</p></p>
+
+<p>其他</p>
+
+<p>有人把这个问题报给了Sun，不过Sun不认为这个是一个问题。因为HashMap本来就不支持并发。要并发就用ConcurrentHashmap</p>
+
+<p><a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457">http://bugs.sun.com/bugdatabase/view<em>bug.do?bug</em>id=6423457</a></p>
+
+<p>我在这里把这个事情记录下来，只是为了让大家了解并体会一下并发环境下的危险。</p>
+
+        </div>
+        
+        
+         	<HR/>
+         	<div class="tzy-details__comments">
+ 	            <!-- Duoshuo Comment BEGIN -->
+ 	            <div class="ds-thread"></div>
+                <script type="text/javascript">
+                    var duoshuoQuery = {short_name:"taozeyu"};
+                    (function() {
+                        var ds = document.createElement('script');
+                        ds.type = 'text/javascript';ds.async = true;
+                        ds.src = 'http://static.duoshuo.com/embed.js';
+                        ds.charset = 'UTF-8';
+                        (document.getElementsByTagName('head')[0] 
+                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+                    })();
+                </script>
+ 	         </div>
+        
+    </div>
+</div>
+
+    </main>
+    
+	</body>
+</html>

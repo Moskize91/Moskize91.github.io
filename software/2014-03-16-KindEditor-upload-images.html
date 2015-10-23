@@ -1,0 +1,224 @@
+<html lan="cn" xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+		<link rel="stylesheet" href="/mdl-style.css" />
+		<script src="/mdl-min.js"></script>
+		<link rel="stylesheet" href="/styles.css">
+	</head>
+	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+    
+    <header class="tzy-header">
+        <span class="tzy-header__title">
+            <a href="/">TaoZeyu's Blog</a>
+        </span>
+        <div class="tzy-header__elements">
+        
+          <nav>
+              
+              <a href="/nodes/technology.html">
+                技术
+              </a>
+              
+              <a href="/nodes/chat.html">
+                杂谈
+              </a>
+              
+          </nav>
+        </div>
+        <div style="clear: both;"/>
+    </header>
+      
+    <main class="tzy-content">
+	    
+
+<div class="tzy-details">
+    
+	<div class="card">
+        <div>
+        	<a href="/" class="mdl-button">返回首页</a>
+             
+             <div style="clear: both;"/>
+        </div>
+    	<div class="tzy-article">
+    		<h1 class="title">KindEditor上传图片</h1>
+    		
+            <p>通过之前的文章《KindEditor的安装和使用》的介绍，我们已经可以令我们的网页上出现一个KindEditor在线文本编辑器。我们可以直接使用它，在里面添加文字，编辑其格式，排版什么的。完了，我们还可以把内容提交到服务器（用于发表文章，编辑文章等，这就看具体业务需求了）。</p>
+
+<p>好了，但是仅仅做到这一步，你会发现如果试图上传图片，只会弹出一个404错误窗口。（如果你没有得到错误窗口，你一定不是按照我在《KindEditor的安装和使用》中介绍的方法安装的，那么你也许不必继续看了，因为按照特定语言的安装方法安装的话，应该一切都搞定了才对。）</p>
+
+<p>那么我们就来做一个上传功能吧。首先，后台服务器应该为前台提供一个接口，接收上传的图片，然后把它保存在服务器的文件系统内（或存储在数据库中，或其他，具体如何做由你自己决定），然后，将能访问到该图片的url返回给前台。</p>
+
+<p>后台具体如何实现，取决于你用什么语言，用什么技术。我大概演示下用Ruby on Rails如何实现后台。</p></p>
+
+<p><div class='highlight'><code><pre>
+#&nbsp;app/controller/image_upload_controller.rb
+class&nbsp;ImageUploadController&nbsp;&lt;&nbsp;ApplicationController
+&nbsp;&nbsp;def&nbsp;upload
+&nbsp;&nbsp;&nbsp;&nbsp;_upload&nbsp;=&nbsp;params[:imgFile]
+&nbsp;&nbsp;&nbsp;&nbsp;_name&nbsp;=&nbsp;create_image_name
+&nbsp;&nbsp;&nbsp;&nbsp;_path&nbsp;=&nbsp;File.join(Directory,&nbsp;_name)
+&nbsp;&nbsp;&nbsp;&nbsp;File.open(_path,&nbsp;&quot;wb&quot;)&nbsp;do&nbsp;|f|
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f.write(_upload.read)
+&nbsp;&nbsp;&nbsp;&nbsp;end
+&nbsp;&nbsp;&nbsp;&nbsp;render&nbsp;:json&nbsp;=&gt;&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:error&nbsp;=&gt;&nbsp;0,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:url&nbsp;=&gt;&nbsp;&quot;/upload/images/#{_name}&quot;
+&nbsp;&nbsp;&nbsp;&nbsp;}.to_json
+&nbsp;&nbsp;&nbsp;&nbsp;puts&nbsp;_path
+&nbsp;&nbsp;&nbsp;&nbsp;puts&nbsp;&quot;#{Directory}#{_name}&quot;
+&nbsp;&nbsp;end
+&nbsp;&nbsp;
+&nbsp;&nbsp;private
+&nbsp;&nbsp;
+&nbsp;&nbsp;TimeFormat&nbsp;=&nbsp;'%Y%m%d%H%M%a'
+&nbsp;&nbsp;Directory&nbsp;=&nbsp;'public/upload/images/'
+&nbsp;&nbsp;
+&nbsp;&nbsp;def&nbsp;create_image_name
+&nbsp;&nbsp;&nbsp;&nbsp;&quot;IMG#{Time.now.strftime(TimeFormat)}#{rand(0..9999)}.jpg&quot;
+&nbsp;&nbsp;end
+&nbsp;&nbsp;
+end
+</pre></code></div></p>
+
+<p>处理细节上，我的后台是直接将上传的图片保存在public/upload/images/文件夹里面，在Ruby on Rails中，public下的资源浏览器可以直接访问。假如图片在服务器中的地址是 public/upload/images/IMG.jpg，则用户直接在浏览器中输入'http://www.XXX.com/upload/images/IMG.jpg'就可以访问到该图片。</p>
+
+<p>你当然可以把图片保存在数据库，但是只要能提供图片的url地址就行。不同的语言后台实现不一，但是只要注意两点就行了。</p>
+
+<ul>
+<li>向前端提供一个用于上传图片的url接口。KindEditor会用POST方法访问该url从而把图片上传给服务器。</li>
+<li>在处理完上传的图片后（保存在本地，或存储在数据库），返回一个json给客户端。这个json最重要的信息是，成功上传图片的url地址。</li>
+</ul>
+
+<p>根据官方文档，这个json的格式应该是这样的：</p>
+
+<p><div class='highlight'><code><pre>
+//成功时
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;error&quot;&nbsp;:&nbsp;0,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;url&quot;&nbsp;:&nbsp;&quot;http://www.example.com/upload/images/IMG.jpg&quot;
+}
+//失败时
+{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;error&quot;&nbsp;:&nbsp;1,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;message&quot;&nbsp;:&nbsp;&quot;错误信息&quot;
+}
+</pre></code></div></p>
+
+<p>在编写了后台接收图片上传的url后，要将这个url告诉KindEditor。在配置KindEditor的时候，应该有说必须加上这么一些js脚本。</p>
+
+<p><div class='highlight'><code><pre>
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KindEditor.ready(function(K)&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window.editor&nbsp;=&nbsp;K.create('#editor_id');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});
+&lt;/script&gt;
+</pre></code></div></p>
+
+<p>现在，将其改为：</p>
+
+<p><div class='highlight'><code><pre>
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;KindEditor.ready(function(K)&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window.editor&nbsp;=&nbsp;('#editor-id',&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uploadJson&nbsp;:&nbsp;'/image_upload/upload'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});
+&lt;/script&gt;
+</pre></code></div></p>
+
+<p>我这么改了以后，等于是为KindEditor的初始化配置了一个参数。即uploadJson，这个参数说明当KindEditor要上传图片的时候，它应该访问哪个url接口。这种初始化参数还有很多。详情可以查看<a href="http://kindeditor.net/docs/option.html">官方文档</a>。鉴于本篇只讨论上传图片，其他参数就不罗嗦了。</p>
+
+<p>哦，还有，本文的代码仅供参考，直接复制粘贴肯定不能运行的。如果非要复制粘贴，请将代码中的特定部分改为你的项目中的内容。）</p>
+
+<p>之后，如果使用KindEditor的上传图片功能，在一段时间的等待后，你将看到上传的图片出现在编辑区内。这就代表成功了。</p>
+
+<p>如果上传图片成功（没有出现错误信息），但是图片却在编辑区内无法显示，那么就检查一下json返回的那个图片url信息是否正确吧。试图将它输入到浏览器中，试试浏览器能否访问到该图片。总之，要让那个url是有效的。</p>
+
+<p>哦，写到这里我突然想起来了一个东西，就是错误信息。官方文档说uploadJson参数的url应该返回一个json，但是，如果我偏不返回json，而是返回一个<span class='highlight'><code>Content-Type=text/html</span></code>的页面，那么KindEditor将视为图片上传失败的错误，并将这个页面以弹出对话框的形式显示出来。（我只试过4.1，其他版本是否如此没试过。）</p>
+
+<p>因此如果你不想让图片上传失败后仅仅显示文字的话，返回一个漂亮点的页面提醒图片上传失败了，也是可以的。KindEditor会把它显示出来。</p>
+
+<h1>附录：上传图片时发生CSRF校验错误</h1>
+
+<p>不同的语言和技术，这个错误信息的描述可能不一样。但是，看到这条错误信息，你大概就知道是怎么回事了。如果你使用Ruby on Rails开发后台，那么默认情况下对于浏览器提交的POST方法，都会进行CSRF校验。（实际上Rails还会对PUT，DELETE方法校验，但这就扯远了，和本主题无关了。）</p>
+
+<p>为什么要校验，请参考<a href="http://www.ibm.com/developerworks/cn/web/1102_niugang_csrf/">《CSRF攻击的应对之道》</a>。如果你对CSRF攻击不感兴趣，只想知道如何令你的图片可以通过验证成功上传，也没关系。</p>
+
+<p>遗憾的是，KindEditor似乎没有提供CSRF验证的支持（这点尚未考证，我接触KindEditor不久，如有勿请告诉我），因此，如果你的后台程序要求CSRF验证，那么，KindEditor的图片肯定不能上传成功。</p>
+
+<p>因此，最简单的解决方法，就是关掉CSRF验证。关掉整个服务器的CSRF验证肯定是把玩笑开大了，那么你可以只关掉上传图片的url的验证。</p>
+
+<p>但这么一来，就算是阿猫阿狗都能通过你的url向你的服务器疯狂上传图片了。所以，手动写一段过滤程序吧。例如必须是登录用户且有上传图片权限的用户才能上传图片，否则直接返回error。</p>
+
+<p>但是，你可能会说，我一定要验证，不验证不行！那么，就去改KindEditor的源代码吧。怎么改网上貌似还是有很多，但是大家改法不一。我也把我改的东西贴出来，这样也多一个参考。</p>
+
+<p>CSRF的验证有很多种，一定要知道自己的后台如何验证才能开始动手改。例如我是用的Ruby on Rails，它会在html页面的head中加入如下信息。</p>
+
+<p><div class='highlight'><code><pre>
+&lt;meta&nbsp;name=&quot;csrf-param&quot;&nbsp;content=&quot;authenticity_token&quot;/&gt;
+&lt;meta&nbsp;name=&quot;csrf-token&quot;&nbsp;content=&quot;eNaG5Hp25pctFmtko9LEvXWtbnBXnN8wxzzlcpMeupc=&quot;/&gt;
+</pre></code></div></p>
+
+<p>如果在POST提交的时候加一个字段 <span class='highlight'><code>'authenticity_token'&nbsp;=&gt;'eNaG5Hp25pctFmtko9LEvXWtbnBXnN8wxzzlcpMeupc='</span></code>，那么验证就会通过，至少Rails是如此。但是，这个csrf-token不是一个固定值，因此每次提交图片的时候必须动态的从head里取才行。</p>
+
+<p>因此，我们要通过修改KindEditor的源代码，令它在上传图片的时候，把authenticity_token字段带上。</p>
+
+<p>首先，找到kindeditor.js文件，然后找到大约4100行前后的范围（我的版本是4.1.x具体忘了），算了，我不写怎么找了，反正也不好找。我直接贴出我是怎么改的，如果你要想跟着改的话，直接ctrl+F找到附近位置就好了。</p>
+
+<p><div class='highlight'><code><pre>
+var&nbsp;hiddenElements&nbsp;=&nbsp;[];
+for(var&nbsp;k&nbsp;in&nbsp;extraParams){
+	hiddenElements.push('&lt;input&nbsp;type=&quot;hidden&quot;&nbsp;name=&quot;'&nbsp;+&nbsp;k&nbsp;+&nbsp;'&quot;&nbsp;value=&quot;'&nbsp;+&nbsp;extraParams[k]&nbsp;+&nbsp;'&quot;&nbsp;/&gt;');
+}
+//MOsky&nbsp;inserts&nbsp;this&nbsp;code.
+var&nbsp;csrfParam&nbsp;=&nbsp;$(&quot;meta[name='csrf-param']&quot;).attr(&quot;content&quot;);
+var&nbsp;csrfToken&nbsp;=&nbsp;$(&quot;meta[name='csrf-token']&quot;).attr(&quot;content&quot;);
+//End&nbsp;insert
+var&nbsp;html&nbsp;=&nbsp;[
+	'&lt;div&nbsp;class=&quot;ke-inline-block&nbsp;'&nbsp;+&nbsp;cls&nbsp;+&nbsp;'&quot;&gt;',
+	(options.target&nbsp;?&nbsp;''&nbsp;:&nbsp;'&lt;iframe&nbsp;name=&quot;'&nbsp;+&nbsp;target&nbsp;+&nbsp;'&quot;&nbsp;style=&quot;display:none;&quot;&gt;&lt;/iframe&gt;'),
+	(options.form&nbsp;?&nbsp;'&lt;div&nbsp;class=&quot;ke-upload-area&quot;&gt;'&nbsp;:&nbsp;'&lt;form&nbsp;class=&quot;ke-upload-area&nbsp;ke-form&quot;&nbsp;method=&quot;post&quot;&nbsp;enctype=&quot;multipart/form-data&quot;&nbsp;target=&quot;'&nbsp;+&nbsp;target&nbsp;+&nbsp;'&quot;&nbsp;action=&quot;'&nbsp;+&nbsp;url&nbsp;+&nbsp;'&quot;&gt;'),
+	'&lt;span&nbsp;class=&quot;ke-button-common&quot;&gt;',
+	hiddenElements.join(''),
+	//MOsky&nbsp;inserts&nbsp;this&nbsp;code.
+	'&lt;input&nbsp;type=&quot;hidden&quot;&nbsp;name=&quot;',&nbsp;csrfParam,&nbsp;'&quot;&nbsp;value=&quot;',&nbsp;csrfToken,&nbsp;'&quot;/&gt;',
+	//End&nbsp;insert
+	'&lt;input&nbsp;type=&quot;button&quot;&nbsp;class=&quot;ke-button-common&nbsp;ke-button&quot;&nbsp;value=&quot;'&nbsp;+&nbsp;title&nbsp;+&nbsp;'&quot;&nbsp;/&gt;',
+	'&lt;/span&gt;',
+	'&lt;input&nbsp;type=&quot;file&quot;&nbsp;class=&quot;ke-upload-file&quot;&nbsp;name=&quot;'&nbsp;+&nbsp;fieldName&nbsp;+&nbsp;'&quot;&nbsp;tabindex=&quot;-1&quot;&nbsp;/&gt;',
+	(options.form&nbsp;?&nbsp;'&lt;/div&gt;'&nbsp;:&nbsp;'&lt;/form&gt;'),
+	'&lt;/div&gt;'].join('');
+var&nbsp;div&nbsp;=&nbsp;K(html,&nbsp;button.doc);
+</pre></code></div></p>
+
+<p>原理就是我直接从html文件的head中将这两个标签中的值取出来。</p>
+
+<p>然后在提交图片的时候，生成一个input，将其name设置成authenticity_token，value设置成取的token值。然后一起提交上去了。</p>
+
+        </div>
+        
+        
+         	<HR/>
+         	<div class="tzy-details__comments">
+ 	            <!-- Duoshuo Comment BEGIN -->
+ 	            <div class="ds-thread"></div>
+                <script type="text/javascript">
+                    var duoshuoQuery = {short_name:"taozeyu"};
+                    (function() {
+                        var ds = document.createElement('script');
+                        ds.type = 'text/javascript';ds.async = true;
+                        ds.src = 'http://static.duoshuo.com/embed.js';
+                        ds.charset = 'UTF-8';
+                        (document.getElementsByTagName('head')[0] 
+                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+                    })();
+                </script>
+ 	         </div>
+        
+    </div>
+</div>
+
+    </main>
+    
+	</body>
+</html>
