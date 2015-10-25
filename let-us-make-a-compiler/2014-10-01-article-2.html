@@ -5,13 +5,18 @@
 		<link rel="stylesheet" href="/mdl-style.css" />
 		<script src="/mdl-min.js"></script>
 		<link rel="stylesheet" href="/styles.css">
+		
+			<script type="text/javascript" src="/jquery.min.js"></script>
+			<script type="text/javascript" src="/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+			<link rel="stylesheet" href="/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+		
 		<title>
 			
 				从零开始写个编译器吧 - 编译器的结构 - 
 			 moskize 的博客
 		</title>
 	</head>
-	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+	<body class="util-centered-container">
     
     <header class="tzy-header">
         <span class="tzy-header__title">
@@ -34,13 +39,13 @@
         <div style="clear: both;"/>
     </header>
       
-    <main class="tzy-content">
+    <main class="tzy-content util-centered-content">
 	    
 
 <div class="tzy-details">
     
-	<div class="card">
-        <div>
+	<div class="card util-centered-container">
+        <div class="tzy-details__header">
         	<a href="/" class="mdl-button">返回首页</a>
              
              	&gt;&gt;
@@ -48,18 +53,21 @@
              
              <div style="clear: both;"/>
         </div>
-    	<div class="tzy-article">
-    		<h1 class="title">从零开始写个编译器吧 - 编译器的结构</h1>
-    		
-    			<div class="declare">
-    			
-    			
-    			
-    				点击<a target="_blank" href="http://zhuanlan.zhihu.com/mosky/19878110">这里</a>查看原文
-    			。
-    			</div>
-    		
-            <p>自然，我们还是先从 tao 语言的编译器下手吧。在动手写编译器之前，得容我将编译器的结构进行进一步的划分。编译器可视为一个黑盒，从其一端输入源代码，另一端产出目标代码。此过程进一步拆分便有了如下形式。</p>
+        
+        <div class="tzy-details__content util-centered-content">
+        
+	    	<div class="tzy-article">
+	    		<h1 class="title">从零开始写个编译器吧 - 编译器的结构</h1>
+	    		
+	    			<div class="declare">
+	    			
+	    			
+	    			
+	    				点击<a target="_blank" href="http://zhuanlan.zhihu.com/mosky/19878110">这里</a>查看原文
+	    			。
+	    			</div>
+	    		
+	            <p>自然，我们还是先从 tao 语言的编译器下手吧。在动手写编译器之前，得容我将编译器的结构进行进一步的划分。编译器可视为一个黑盒，从其一端输入源代码，另一端产出目标代码。此过程进一步拆分便有了如下形式。</p>
 
 <p>首先是 Tokenizer （词法分析器），它读入一个一个字符，并将其合并成一个一个Token（单词）。这些 Token 将被 Parser（语法分析器）接收并进行进一步处理。Parser 处理结果称之为 Syntax Tree （语法树），此时产物不再是线性结构，而转为变成树形结构了。</p>
 
@@ -69,27 +77,58 @@
 
 <p>由于本系列将着重于“写”出编译器，必要的理论和概念还是会交代的。不过会有所侧重，若非与我要写的代码紧密相关，概念和理论也不会做过多着墨。</p>
 
-        </div>
-        
-        
-         	<HR/>
-         	<div class="tzy-details__comments">
- 	            <!-- Duoshuo Comment BEGIN -->
- 	            <div class="ds-thread"></div>
-                <script type="text/javascript">
-                    var duoshuoQuery = {short_name:"taozeyu"};
-                    (function() {
-                        var ds = document.createElement('script');
-                        ds.type = 'text/javascript';ds.async = true;
-                        ds.src = 'http://static.duoshuo.com/embed.js';
-                        ds.charset = 'UTF-8';
-                        (document.getElementsByTagName('head')[0] 
-                        || document.getElementsByTagName('body')[0]).appendChild(ds);
-                    })();
-                </script>
- 	         </div>
-        
+	        	</div>
+	        </div>
+	     </div>
+	     
+	        
+	         	<HR/>
+	         	<div class="tzy-details__content util-centered-content">
+		         	<div class="tzy-details__comments">
+		 	            <!-- Duoshuo Comment BEGIN -->
+		 	            <div class="ds-thread"></div>
+		                <script type="text/javascript">
+		                    var duoshuoQuery = {short_name:"taozeyu"};
+		                    (function() {
+		                        var ds = document.createElement('script');
+		                        ds.type = 'text/javascript';ds.async = true;
+		                        ds.src = 'http://static.duoshuo.com/embed.js';
+		                        ds.charset = 'UTF-8';
+		                        (document.getElementsByTagName('head')[0] 
+		                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+		                    })();
+		                </script>
+		 	         </div>
+	 	         </div>
+	        
     </div>
+    <script type="text/javascript">
+    	$(".tzy-details img").each(function (){
+    		var src = $(this).attr("src"),
+    			alt = $(this).attr("alt");
+    		
+    		var html = ['<a class="fancybox-images" href="', src, '" title="',
+    					 alt, '"><img src="', src, '" alt="', alt, '"/></a>'].join("");
+    		
+    		$(this).after(html);
+    		$(this).remove();
+    	});
+    	$('.tzy-details .fancybox-images').fancybox({
+            prevEffect : 'none',
+            nextEffect : 'none',
+
+            closeBtn  : true,
+            arrows    : true,
+            nextClick : true,
+
+            helpers : {
+                thumbs : {
+                    width  : 50,
+                    height : 50
+                }
+            }
+        });
+    </script>
 </div>
 
     </main>

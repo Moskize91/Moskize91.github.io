@@ -5,13 +5,18 @@
 		<link rel="stylesheet" href="/mdl-style.css" />
 		<script src="/mdl-min.js"></script>
 		<link rel="stylesheet" href="/styles.css">
+		
+			<script type="text/javascript" src="/jquery.min.js"></script>
+			<script type="text/javascript" src="/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+			<link rel="stylesheet" href="/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+		
 		<title>
 			
 				微软工程师建议的11条数据库设计准则 - 
 			 moskize 的博客
 		</title>
 	</head>
-	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+	<body class="util-centered-container">
     
     <header class="tzy-header">
         <span class="tzy-header__title">
@@ -34,33 +39,36 @@
         <div style="clear: both;"/>
     </header>
       
-    <main class="tzy-content">
+    <main class="tzy-content util-centered-content">
 	    
 
 <div class="tzy-details">
     
-	<div class="card">
-        <div>
+	<div class="card util-centered-container">
+        <div class="tzy-details__header">
         	<a href="/" class="mdl-button">返回首页</a>
              
              <div style="clear: both;"/>
         </div>
-    	<div class="tzy-article">
-    		<h1 class="title">微软工程师建议的11条数据库设计准则</h1>
-    		
-    			<div class="declare">
-    			
-    				该文章属本站翻译，
-    			
-    			
-    				作者ShivprasadKoirala，
-    			
-    			
-    				点击<a target="_blank" href="http://www.codeproject.com/Articles/359654/">这里</a>查看原文
-    			。
-    			</div>
-    		
-            <h1>简介</h1>
+        
+        <div class="tzy-details__content util-centered-content">
+        
+	    	<div class="tzy-article">
+	    		<h1 class="title">微软工程师建议的11条数据库设计准则</h1>
+	    		
+	    			<div class="declare">
+	    			
+	    				该文章属本站翻译，
+	    			
+	    			
+	    				作者ShivprasadKoirala，
+	    			
+	    			
+	    				点击<a target="_blank" href="http://www.codeproject.com/Articles/359654/">这里</a>查看原文
+	    			。
+	    			</div>
+	    		
+	            <h1>简介</h1>
 
 <p>作者：Shivprasad koirala</p></p>
 
@@ -199,27 +207,58 @@
 
 <p><img src="/public/upload/images/important-database-designing-rules-which-I-follow-016.jpg" alt="" /></p>
 
-        </div>
-        
-        
-         	<HR/>
-         	<div class="tzy-details__comments">
- 	            <!-- Duoshuo Comment BEGIN -->
- 	            <div class="ds-thread"></div>
-                <script type="text/javascript">
-                    var duoshuoQuery = {short_name:"taozeyu"};
-                    (function() {
-                        var ds = document.createElement('script');
-                        ds.type = 'text/javascript';ds.async = true;
-                        ds.src = 'http://static.duoshuo.com/embed.js';
-                        ds.charset = 'UTF-8';
-                        (document.getElementsByTagName('head')[0] 
-                        || document.getElementsByTagName('body')[0]).appendChild(ds);
-                    })();
-                </script>
- 	         </div>
-        
+	        	</div>
+	        </div>
+	     </div>
+	     
+	        
+	         	<HR/>
+	         	<div class="tzy-details__content util-centered-content">
+		         	<div class="tzy-details__comments">
+		 	            <!-- Duoshuo Comment BEGIN -->
+		 	            <div class="ds-thread"></div>
+		                <script type="text/javascript">
+		                    var duoshuoQuery = {short_name:"taozeyu"};
+		                    (function() {
+		                        var ds = document.createElement('script');
+		                        ds.type = 'text/javascript';ds.async = true;
+		                        ds.src = 'http://static.duoshuo.com/embed.js';
+		                        ds.charset = 'UTF-8';
+		                        (document.getElementsByTagName('head')[0] 
+		                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+		                    })();
+		                </script>
+		 	         </div>
+	 	         </div>
+	        
     </div>
+    <script type="text/javascript">
+    	$(".tzy-details img").each(function (){
+    		var src = $(this).attr("src"),
+    			alt = $(this).attr("alt");
+    		
+    		var html = ['<a class="fancybox-images" href="', src, '" title="',
+    					 alt, '"><img src="', src, '" alt="', alt, '"/></a>'].join("");
+    		
+    		$(this).after(html);
+    		$(this).remove();
+    	});
+    	$('.tzy-details .fancybox-images').fancybox({
+            prevEffect : 'none',
+            nextEffect : 'none',
+
+            closeBtn  : true,
+            arrows    : true,
+            nextClick : true,
+
+            helpers : {
+                thumbs : {
+                    width  : 50,
+                    height : 50
+                }
+            }
+        });
+    </script>
 </div>
 
     </main>

@@ -5,13 +5,18 @@
 		<link rel="stylesheet" href="/mdl-style.css" />
 		<script src="/mdl-min.js"></script>
 		<link rel="stylesheet" href="/styles.css">
+		
+			<script type="text/javascript" src="/jquery.min.js"></script>
+			<script type="text/javascript" src="/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+			<link rel="stylesheet" href="/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+		
 		<title>
 			
 				KindEditor上传图片 - 
 			 moskize 的博客
 		</title>
 	</head>
-	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+	<body class="util-centered-container">
     
     <header class="tzy-header">
         <span class="tzy-header__title">
@@ -34,21 +39,24 @@
         <div style="clear: both;"/>
     </header>
       
-    <main class="tzy-content">
+    <main class="tzy-content util-centered-content">
 	    
 
 <div class="tzy-details">
     
-	<div class="card">
-        <div>
+	<div class="card util-centered-container">
+        <div class="tzy-details__header">
         	<a href="/" class="mdl-button">返回首页</a>
              
              <div style="clear: both;"/>
         </div>
-    	<div class="tzy-article">
-    		<h1 class="title">KindEditor上传图片</h1>
-    		
-            <p>通过之前的文章《KindEditor的安装和使用》的介绍，我们已经可以令我们的网页上出现一个KindEditor在线文本编辑器。我们可以直接使用它，在里面添加文字，编辑其格式，排版什么的。完了，我们还可以把内容提交到服务器（用于发表文章，编辑文章等，这就看具体业务需求了）。</p>
+        
+        <div class="tzy-details__content util-centered-content">
+        
+	    	<div class="tzy-article">
+	    		<h1 class="title">KindEditor上传图片</h1>
+	    		
+	            <p>通过之前的文章《KindEditor的安装和使用》的介绍，我们已经可以令我们的网页上出现一个KindEditor在线文本编辑器。我们可以直接使用它，在里面添加文字，编辑其格式，排版什么的。完了，我们还可以把内容提交到服务器（用于发表文章，编辑文章等，这就看具体业务需求了）。</p>
 
 <p>好了，但是仅仅做到这一步，你会发现如果试图上传图片，只会弹出一个404错误窗口。（如果你没有得到错误窗口，你一定不是按照我在《KindEditor的安装和使用》中介绍的方法安装的，那么你也许不必继续看了，因为按照特定语言的安装方法安装的话，应该一切都搞定了才对。）</p>
 
@@ -201,27 +209,58 @@ var&nbsp;div&nbsp;=&nbsp;K(html,&nbsp;button.doc);
 
 <p>然后在提交图片的时候，生成一个input，将其name设置成authenticity_token，value设置成取的token值。然后一起提交上去了。</p>
 
-        </div>
-        
-        
-         	<HR/>
-         	<div class="tzy-details__comments">
- 	            <!-- Duoshuo Comment BEGIN -->
- 	            <div class="ds-thread"></div>
-                <script type="text/javascript">
-                    var duoshuoQuery = {short_name:"taozeyu"};
-                    (function() {
-                        var ds = document.createElement('script');
-                        ds.type = 'text/javascript';ds.async = true;
-                        ds.src = 'http://static.duoshuo.com/embed.js';
-                        ds.charset = 'UTF-8';
-                        (document.getElementsByTagName('head')[0] 
-                        || document.getElementsByTagName('body')[0]).appendChild(ds);
-                    })();
-                </script>
- 	         </div>
-        
+	        	</div>
+	        </div>
+	     </div>
+	     
+	        
+	         	<HR/>
+	         	<div class="tzy-details__content util-centered-content">
+		         	<div class="tzy-details__comments">
+		 	            <!-- Duoshuo Comment BEGIN -->
+		 	            <div class="ds-thread"></div>
+		                <script type="text/javascript">
+		                    var duoshuoQuery = {short_name:"taozeyu"};
+		                    (function() {
+		                        var ds = document.createElement('script');
+		                        ds.type = 'text/javascript';ds.async = true;
+		                        ds.src = 'http://static.duoshuo.com/embed.js';
+		                        ds.charset = 'UTF-8';
+		                        (document.getElementsByTagName('head')[0] 
+		                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+		                    })();
+		                </script>
+		 	         </div>
+	 	         </div>
+	        
     </div>
+    <script type="text/javascript">
+    	$(".tzy-details img").each(function (){
+    		var src = $(this).attr("src"),
+    			alt = $(this).attr("alt");
+    		
+    		var html = ['<a class="fancybox-images" href="', src, '" title="',
+    					 alt, '"><img src="', src, '" alt="', alt, '"/></a>'].join("");
+    		
+    		$(this).after(html);
+    		$(this).remove();
+    	});
+    	$('.tzy-details .fancybox-images').fancybox({
+            prevEffect : 'none',
+            nextEffect : 'none',
+
+            closeBtn  : true,
+            arrows    : true,
+            nextClick : true,
+
+            helpers : {
+                thumbs : {
+                    width  : 50,
+                    height : 50
+                }
+            }
+        });
+    </script>
 </div>
 
     </main>

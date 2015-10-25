@@ -5,13 +5,18 @@
 		<link rel="stylesheet" href="/mdl-style.css" />
 		<script src="/mdl-min.js"></script>
 		<link rel="stylesheet" href="/styles.css">
+		
+			<script type="text/javascript" src="/jquery.min.js"></script>
+			<script type="text/javascript" src="/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+			<link rel="stylesheet" href="/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+		
 		<title>
 			
 				JVM类装载机制的解析，以及热更新的探讨（一） - 
 			 moskize 的博客
 		</title>
 	</head>
-	<body class="mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+	<body class="util-centered-container">
     
     <header class="tzy-header">
         <span class="tzy-header__title">
@@ -34,21 +39,24 @@
         <div style="clear: both;"/>
     </header>
       
-    <main class="tzy-content">
+    <main class="tzy-content util-centered-content">
 	    
 
 <div class="tzy-details">
     
-	<div class="card">
-        <div>
+	<div class="card util-centered-container">
+        <div class="tzy-details__header">
         	<a href="/" class="mdl-button">返回首页</a>
              
              <div style="clear: both;"/>
         </div>
-    	<div class="tzy-article">
-    		<h1 class="title">JVM类装载机制的解析，以及热更新的探讨（一）</h1>
-    		
-            <h1>引言</h1>
+        
+        <div class="tzy-details__content util-centered-content">
+        
+	    	<div class="tzy-article">
+	    		<h1 class="title">JVM类装载机制的解析，以及热更新的探讨（一）</h1>
+	    		
+	            <h1>引言</h1>
 
 <p>写这篇文章源自一年前对诸如此类问题的好奇和困惑，当时咨询过其他人，也搜集过一些资料，苦于当时不能立即解惑。之后断断续续过了一年，一直在零星搜集这方面的资料，直到今天，大致搜集圆满了。遂成此文，方便日后我自己查看，也分享给大家。</p>
 
@@ -368,27 +376,58 @@ false
 
 <p>另外，System加载器也是<span class='highlight'><code>void&nbsp;main(String[])</span></code>所在类的加载器。这意味着，除了Java的标准库，应用程序中所有的自定义类全部都是System加载器加载的（不使用显示加载的话）。</p>
 
-        </div>
-        
-        
-         	<HR/>
-         	<div class="tzy-details__comments">
- 	            <!-- Duoshuo Comment BEGIN -->
- 	            <div class="ds-thread"></div>
-                <script type="text/javascript">
-                    var duoshuoQuery = {short_name:"taozeyu"};
-                    (function() {
-                        var ds = document.createElement('script');
-                        ds.type = 'text/javascript';ds.async = true;
-                        ds.src = 'http://static.duoshuo.com/embed.js';
-                        ds.charset = 'UTF-8';
-                        (document.getElementsByTagName('head')[0] 
-                        || document.getElementsByTagName('body')[0]).appendChild(ds);
-                    })();
-                </script>
- 	         </div>
-        
+	        	</div>
+	        </div>
+	     </div>
+	     
+	        
+	         	<HR/>
+	         	<div class="tzy-details__content util-centered-content">
+		         	<div class="tzy-details__comments">
+		 	            <!-- Duoshuo Comment BEGIN -->
+		 	            <div class="ds-thread"></div>
+		                <script type="text/javascript">
+		                    var duoshuoQuery = {short_name:"taozeyu"};
+		                    (function() {
+		                        var ds = document.createElement('script');
+		                        ds.type = 'text/javascript';ds.async = true;
+		                        ds.src = 'http://static.duoshuo.com/embed.js';
+		                        ds.charset = 'UTF-8';
+		                        (document.getElementsByTagName('head')[0] 
+		                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+		                    })();
+		                </script>
+		 	         </div>
+	 	         </div>
+	        
     </div>
+    <script type="text/javascript">
+    	$(".tzy-details img").each(function (){
+    		var src = $(this).attr("src"),
+    			alt = $(this).attr("alt");
+    		
+    		var html = ['<a class="fancybox-images" href="', src, '" title="',
+    					 alt, '"><img src="', src, '" alt="', alt, '"/></a>'].join("");
+    		
+    		$(this).after(html);
+    		$(this).remove();
+    	});
+    	$('.tzy-details .fancybox-images').fancybox({
+            prevEffect : 'none',
+            nextEffect : 'none',
+
+            closeBtn  : true,
+            arrows    : true,
+            nextClick : true,
+
+            helpers : {
+                thumbs : {
+                    width  : 50,
+                    height : 50
+                }
+            }
+        });
+    </script>
 </div>
 
     </main>
