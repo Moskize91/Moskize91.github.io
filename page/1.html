@@ -50,6 +50,12 @@
     
     <HR/>
     <div class="tzy-details__article">
+    	<h4><a href="/software/2014/03/14/concurrent-hash-source-code-analyze.html">源码分析，无锁但线程安全的并发哈希映射（ConcurrentHashMap）</a></h4>
+		ConcurrentHashMap是一个线程安全的哈希实现类，它不但能使多线程同时操作该类时保证线程是安全的，同时为了保证对Map的读操作的高效，完全不使用同步锁。 实现单线程，或简单通过加锁来实现线程安全的一个哈希表所用到的数据结构知识是很普通的，但如果不加锁，也能保证线程安全，则需要用到一些“奇技淫巧”了。 编写JDK的程序员正是这么一些掌握了这种“奇技淫巧”的人。，而Concurren...
+	</div>
+	
+    <HR/>
+    <div class="tzy-details__article">
     	<h4><a href="/software/2014/03/26/eleven-important-database-designing-rules-which-I-follow.html">微软工程师建议的11条数据库设计准则</a></h4>
 		简介 作者：Shivprasad koirala 前微软ASP/ASP.NET的MVC工程师，现在印度当CEO。如果你认为本文有些地方翻译不准确，可以去知言译义网对应的贴子参与本贴的翻译。 引言 在你开始读这篇文章之前，我可要事先声明，我可不是什么数据库设计方面的大师什么的。这11条设计准则，都是我从实际项目中，从经验中，从阅读和学习之中总结而来的。我个人认为，如我来设计数据库，遵循这11条...
 	</div>
@@ -72,13 +78,7 @@
 		引言 写这篇文章源自一年前对诸如此类问题的好奇和困惑，当时咨询过其他人，也搜集过一些资料，苦于当时不能立即解惑。之后断断续续过了一年，一直在零星搜集这方面的资料，直到今天，大致搜集圆满了。遂成此文，方便日后我自己查看，也分享给大家。 文章内容其实很多都是我个人推断的结果，虽然有参考一些文献，但这些文献都是零星的，不完整的。（如果有人有完整的，总结性的文献，请发给我，感激不尽。这种文献一定是有...
 	</div>
 	
-    <HR/>
-    <div class="tzy-details__article">
-    	<h4><a href="/software/2014/03/15/jvm-class-loader-2.html">JVM类装载机制的解析，以及热更新的探讨（二）</a></h4>
-		同样，一个Class对象必须知道自己的超类、超级接口。因此，Class对象会引用自己的超类和超级接口的Class对象。这种引用一定是实例引用。（实际上，超类、超级接口的引用也存储在常量池中，但为了区分依赖类的引用，将它特殊表述一下。） 因此，我暂且得到两条结论。 结论一：持有一个Class对象的引用，则任何该Class对象直接或间接依赖的所有类（如果被加载了），都不可能被卸载。同样，只要有一...
-	</div>
-	
-        <nav class="tzy-details__pages"><a class='mdl-button mdl-js-button' href='/'>&lt;</a><a class='mdl-button mdl-js-button' href='/'>1</a><a class='mdl-button mdl-js-button' href='' disabled style='pointer-events: none'>2</a><a class='mdl-button mdl-js-button' href='' disabled style='pointer-events: none'>&gt;</a></nav>
+        <nav class="tzy-details__pages"><a class='mdl-button mdl-js-button' href='/'>&lt;</a><a class='mdl-button mdl-js-button' href='/'>1</a><a class='mdl-button mdl-js-button' href='' disabled style='pointer-events: none'>2</a><a class='mdl-button mdl-js-button' href='/page/2.html'>3</a><a class='mdl-button mdl-js-button' href='/page/2.html'>&gt;</a></nav>
 </div>
 
     </main>
