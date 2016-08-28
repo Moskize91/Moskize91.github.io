@@ -1,0 +1,275 @@
+<html lan="zh-cmn-Hans" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>moskize's blog</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel='stylesheet' href='/css/style.css' type='text/css' media='all'/>
+</head>
+
+<header id="masthead" role="banner" class="site-head site-header" >
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+        <div class="menu-main-container">
+            <ul>
+            
+            <li>
+                <a href="/group/technology.html">
+                    技术
+                </a>
+            </li>
+            
+            <li>
+                <a href="/group/funny.html">
+                    杂谈
+                </a>
+            </li>
+            
+            </ul>
+        </div>
+    </nav>
+
+    <div class="vertical-row">
+        <div class="vertical">
+            <h1 class="blog-title"><a class="blog-logo" href='/' rel='home'>moskize</a></h1>
+                <h2 class="blog-description">七牛云存储 iOS 开发工程师</h2>
+            </div>
+        </div>
+        <div class="site-head-content">
+            <div class="social-icons">
+                <a class="icon-home" target="_blank" title="Home" href="/">
+                    <img src="/img/Home.png"/>
+                </a>
+                <a class="icon-envelope" target="_blank" title="Email" href="mailto:xiangtantaozeyu@gmail.com">
+                    <img src="/img/Email.png"/>
+                </a>
+                <a class="icon-github-alt" target="_blank" title="GitHub" href="https://github.com/moskize91/">
+                    <img src="/img/GitHub.png"/>
+                </a>
+        </div>
+    </div>
+</header>
+
+<main class="content" role="main">
+    
+
+
+
+
+
+
+
+
+
+
+<article id="post-1" class="post-1 post type-post status-publish format-standard hentry category-casper tag-test-tag">
+    <header class="post-header">
+        <span class="post-meta">
+            <span class="posted-on">
+                <time class="entry-date published">2016-08-28</time>
+            </span>
+        </span>
+        <h1 class="post-title"><a href="/article/2016-08-28-Calico-kuai-su-ru-shou-zhi-nan.html" rel="bookmark">-Calico-快速入手指南</a></h1>
+    </header>
+
+    <section class="post-content">
+        <p><p>Calico 可以根据预设的规则，通过一个模板和一个资料库，生成一个静态 Web 站点所需的 Html 文件。Calico 会假装自己是一个动态服务器。对 Calico 的规则和模板都是通过假装 Calico 是动态服务器来确立的。</p>
+
+<h1>Calico 的工作原理</h1>
+
+<p>具体来说，当 Calico 收到一个 Request，它会解析 Request 的 URL，并通过路由规则匹配到一个模板 View。并通过模板 View 构造 html 页面。模板 View 中可以嵌套用 JavaScript 写成的小脚本，这些小脚本会通过 Request 的参数（从 URL 解析得来）来获取对应的资源，这些资源可以是其他 html 页面，也可以是 markdown 文件，甚至是 json 文件。读取的资源会通过小脚本嵌套再模板 View 最终渲染出的 html 页面中。最终，这个 html 页面作为一个 Response 被返回。</p>
+
+<p>但 Calico 终究不是一个动态 Web 服务器。实际上，Calico 仅仅只能一次性生成一个 Web 站点所需的所有 html 文件。它是这样工作的。</p>
+
+<p>首先，Calico 会挑选一组种子地址，默认是 “<code>/</code>” 这个根地址。之后，请求这些种子地址，并渲染出 html 页面。之后在 html 页面中寻找所有指向站内的 URL，再以这些 URL 发起请求渲染更多的 html 页面。这个过程会递归地进行下去，直到找不到更多的指向站内的 URL 地址为止。</p>
+
+<p>这一过程的原理类似爬虫。这样便可保证 Calico 生成的那一堆 html 文件，里面的任何一个指向站内的 URL 都是可以打开的。之后，我们只需要把 Calico 生成的所有文件发布到某个静态 Web 站点即可。</p>
+
+<h1>安装</h1>
+
+<p>Calico 目前只支持 Unix/Linux/macOS 平台。
+请确保安装了 git、ant、JDK1.8。</p>
+
+<p>首先，你需要挑选一个 Calico 所安装的目标文件夹，用 Terminal 切换到该文件夹下。然后运行下面这两行命令的任意一行，来 clone 整个项目。</p>
+
+<ul>
+<li><code>git clone git@github.com:Moskize91/Calico.git</code></li>
+<li><code>git clone https://github.com/Moskize91/Calico.git</code></li>
+</ul>
+
+<p>之后，输入 <code>cd Calico</code>。</p>
+
+<p>进入项目文件夹之后，请输入 <code>./build</code> 来构造整个项目。当你看到……</p>
+
+<p><pre><div class='highlight'><code>
+BUILD&nbsp;SUCCESSFUL
+Total&nbsp;time:&nbsp;2&nbsp;seconds
+</code></div></pre></p>
+
+<p>的字样，说明 Calico 构造成功。否则，请确认你已经安装了 ant 和 JDK1.8。</p>
+
+<p>之后，输入 <code>./install</code> 安装 Calico。</p>
+
+<p>其中可能需要你输入 sudo 密码，输入即可。看到</p>
+
+<p><pre><div class='highlight'><code>
+Success.
+</code></div></pre>
+的字样，说明 Calico 安装成功。</p>
+
+<h1>第一个 Calico 模板</h1>
+
+<p>对于 Calico 而言，模板＋资源＝站点。
+我们先写一个最简单的的，不需要任何资源就可以使用的模板吧。</p>
+
+<p><pre><div class='highlight'><code>
+mkdir&nbsp;example
+cd&nbsp;example
+</code></div></pre></p>
+
+<p>新建一个名为 example 的空文件夹，作为我们的模板文件夹。然后……</p>
+
+<p><pre><div class='highlight'><code>
+mkdir&nbsp;view
+</code></div></pre></p>
+
+<p>这个名为 view 的文件夹是专门存放模板 View 的。之后……</p>
+
+<p><pre><div class='highlight'><code>
+vim&nbsp;./view/main.html
+</code></div></pre></p>
+
+<p>然后按下 <code>i</code> 输入……</p>
+
+<p><pre><div class='highlight'><code>
+&lt;html&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;body&gt;hello&nbsp;world.&lt;/body&gt;
+&nbsp;&lt;/html&gt;
+</code></div></pre>
+然后按下 <code>ESC</code> 再输入 <code>:wq</code> 并回车保存退出。
+确保此时你处于 <code>example</code> 这个文件夹之中。</p>
+
+<p>最后，输入如下命令以 service 模式启动 Calico……</p>
+
+<p><pre><div class='highlight'><code>
+calico&nbsp;service
+</code></div></pre></p>
+
+<p>当你看到</p>
+
+<p><pre><div class='highlight'><code>
+Running!&nbsp;Point&nbsp;your&nbsp;browser&nbsp;to&nbsp;http://127.0.0.1:8080/&nbsp;
+</code></div></pre></p>
+
+<p>表明 Calico 启动成功，此时，使用浏览器访问 <a href="http://127.0.0.1:8080/">127.0.0.1:8080</a>，就可以看到我们的 hello world 页面了。</p>
+
+<blockquote>
+  <h2>service 模式</h2>
+  
+  <p>Calico 以这种模式运行时，会在本地监听特定的端口（默认 8080 ）。使用浏览器通过这个端口，可以直接与 Calico 交互。此时 Calico 就像一个动态 Web 服务器一样，针对浏览器的每一次 Request 仅仅生成一个 Response。</p>
+  
+  <p>在本地以这种模式执行 Calico，有助于调试你的模板。你对模板中的 View 文件，或 JavaScript 脚本文件，或资源文件进行修改之后，只需要刷新一下浏览器，便可立即看到修改之后的效果。</p>
+</blockquote>
+
+<p>按下 <code>Ctrl + C</code> 结束 Calico 的 service 模式。</p>
+
+<p>之后，我们尝试使用 build 模式执行 Calico。</p>
+
+<p>首先确保你处于 <code>example</code> 文件夹中，输入 <code>ls</code>，此时你应该看到……</p>
+
+<p><pre><div class='highlight'><code>
+view
+</code></div></pre></p>
+
+<p>仅有一个 view 文件夹，这就是我们刚才新建的。然后，输入如下命令并执行。</p>
+
+<p><pre><div class='highlight'><code>
+calico&nbsp;build
+</code></div></pre>
+看到……</p>
+
+<p><pre><div class='highlight'><code>
+Clean&nbsp;target&nbsp;directory:&nbsp;/Users/taozeyu/test/example/target
+	&nbsp;delete&nbsp;file&nbsp;/Users/taozeyu/test/example/target
+
+Copy&nbsp;resource&nbsp;files
+
+Generate&nbsp;html&nbsp;pages.
+	generate&nbsp;path&nbsp;/
+</code></div></pre>
+表明执行成功了，此时输入 <code>ls</code>，可以看到……</p>
+
+<p><pre><div class='highlight'><code>
+target&nbsp;view
+</code></div></pre>
+多出一个 target 文件夹，这是 Calico 生成的。</p>
+
+<p>我们使用 <code>ls target</code> 查看这个文件夹里面的文件。可以看到……</p>
+
+<p><pre><div class='highlight'><code>
+index.html
+</code></div></pre>
+我们使用浏览器打开这个文件，可以看到浏览器中显示……</p>
+
+<blockquote>
+  <p>hello world</p>
+</blockquote>
+
+<p>这正是 Calico 使用我们的模板 View 生成的目标 html 文件。</p>
+
+<blockquote>
+  <h2>build 模式</h2>
+  
+  <p>Calico 以这种模式执行时，会在从种子地址开始，递归地生成所有的可能的 html 文件。每当它产生一个 html 文件，它便立即搜集这个 html 中每一个指向站内的 URL，并通过这些 URL 继续生成更多的 html 文件。直到没有更多的 html 文件可以生成为止。</p>
+</blockquote>
+
+<p><strong><em>未完待续...</em></strong></p>
+</p>
+    </section>
+
+	<footer class="post-footer">
+
+	    <section class="author">
+	    	<img alt='' src='/img/my-icon.png' class='avatar avatar-100 photo' height='100' width='100' />	        
+            <h4><a href="/" title="moskize" rel="author external">moskize</a></h4>
+	        <p>七牛云存储 iOS 开发工程师</p>
+			<div class="clear">&nbsp;</div>
+	    </section>
+
+        <div class="tzy-details__content util-centered-content">
+            <div class="tzy-details__comments">
+                <!-- Duoshuo Comment BEGIN -->
+                <div class="ds-thread"></div>
+                <script type="text/javascript">
+                    var duoshuoQuery = {short_name:"taozeyu"};
+                    (function() {
+                        var ds = document.createElement('script');
+                        ds.type = 'text/javascript';ds.async = true;
+                        ds.src = 'http://static.duoshuo.com/embed.js';
+                        ds.charset = 'UTF-8';
+                        (document.getElementsByTagName('head')[0] 
+                        || document.getElementsByTagName('body')[0]).appendChild(ds);
+                    })();
+                </script>
+            </div>
+        </div>
+
+	</footer>
+</article><!-- #post-## -->
+</main>
+
+<div class="widget-area" role="complementary">
+    <div class="clear">&nbsp;</div>
+</div><!-- #secondary -->
+
+<div style="visibility: hidden;">
+    <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1257188682'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/z_stat.php%3Fid%3D1257188682' type='text/javascript'%3E%3C/script%3E"));</script> 
+</div>
+
+<footer id="colophon" class="site-footer" role="contentinfo">
+	<div class="site-info inner">
+		<section class="copyright">
+			Copyright©2014-2016, Tao Zeyu, All Rights Reserved		    
+		</section>
+	</div><!-- .site-info -->
+</footer><!-- #colophon -->
+
+</html>
